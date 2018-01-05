@@ -55,8 +55,6 @@ cost=np.column_stack((ac_cost, ad_cost, an_cost))
 ac_q=np.zeros(h)
 ad_q=np.zeros(h)
 an_q=np.zeros(h)
-q_value=np.column_stack((ac_q, ad_q, an_q))
-
 actions=np.array([charge_mwh,discharge_mwh,0])
 
 #functions 
@@ -67,26 +65,30 @@ def cost(t,pos):
 #RL init
 alpha=0.01
 gamma=1
-for i in range(0,1000):
+lmbd=1
+itr=1000
+
+q_value=np.column_stack((ac_q, ad_q, an_q))
+for i in range(0,itr):
     batt_state=batt_init;
-    
-
-C=[]
-post=[]
-
-for t in range(0,h):
-    if i==0:
-        pos=rnd.randint(0, len(actions)-1)
-    else:
-        pos=[ii for ii,x in enumerate(q_value[t]) if x == min(q_value[t])]
-        if len(np.array([pos])) > 1:
-            pos=rnd.choice(pos)
+    c=[]
+    pos=[]
+    for t in range(0,h):
+        print pos
+        if i==0:
+            pos.append(rnd.randint(0, len(actions)-1))
+        else:
+            temp=np.array([ii for ii,x in enumerate(q_value[t]) if x == min(q_value[t])])
+            if len(temp) > 1:
+                pos.append(rnd.choice(temp))
+            else:
+                pos.append(temp)               
     #cost computation
-    c=cost(t,pos)
-    ct.append(c)
-    post.append(pos)
-c=actions[post]*p
-C=np.cumsum(list(reversed(ct)))
-print ct    
-print C
-print post
+    c=actions[pos]*p
+    q_current=q_value[np.arange(len(q_value)), pos]
+    q_next=np.append(q_current[1:h], 0)
+    del_q=alpha*((c+lmbd*q_next)-q_current)
+    q_value[np.arange(len(q_value)), pos]=q_value[np.arange(len(q_value)), pos]+del_q
+    print sum(c)   
+    
+C=x[::-1].cumsum()[::-1]
