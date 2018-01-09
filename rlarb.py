@@ -121,3 +121,4 @@ plt2.xlabel('iterations')
 plt2.ylabel('reward of trajectory')
 plt2.title('change in rewards by acting greedily based on updated values of q(s,a) table')
 plt2.grid(True)
+
